@@ -1,0 +1,9 @@
+# Git
+**/.gitignore
+
+# Docker
+.dockerignore
+
+# etc.
+**/.DS_Store
+.phpstorm.meta.php
