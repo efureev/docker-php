@@ -1,38 +1,30 @@
-FROM php:8.3-fpm-alpine3.18
+FROM php:8.3-fpm-alpine3.19
 
 ARG user=app
 ARG uid=1000
 
-ENV PHPIZE_DEPS \
-    pcre-dev \
-    libc-dev \
-    libpq-dev \
-    autoconf \
-    icu-dev \
-    g++ \
-    gcc \
-    make \
-    cmake \
-    libtool
-
-RUN apk add --update --no-cache $PHPIZE_DEPS
-
-RUN apk add --no-cache \
-    bash \
-    curl \
-    fcgi
-
-
-RUN \
-    pear update-channels && \
-    pecl channel-update pecl.php.net && \
-    docker-php-ext-install intl
-
-RUN docker-php-ext-install pdo_pgsql pgsql \
-    && pecl install redis \
-    && pecl install excimer \
-    && docker-php-ext-enable redis.so
-
+RUN set -eux; \
+    # workaround for rabbitmq linking issue \
+    ln -s /usr/lib /usr/local/lib64; \
+    apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+    ; \
+    apk add --no-cache --virtual .build-extra \
+        libpq-dev \
+        icu-dev \
+    ; \
+    apk add --no-cache \
+        fcgi \
+        bash \
+    ; \
+    pecl update-channels; \
+    pecl install --onlyreqdeps --force redis excimer; \
+    docker-php-ext-install pdo_pgsql pgsql intl; \
+    docker-php-ext-enable redis; \
+    apk del --no-network .build-deps; \
+    apk del --no-network .build-extra; \
+    rm -rf /tmp/pear ~/.pearrc; \
+    php --version
 
 RUN set -eux; \
 	{ \
@@ -58,10 +50,6 @@ RUN mkdir -p /home/$user/.composer && \
 
 RUN rm -rf /var/www  && mkdir /var/www && \
     rm -rf /tmp/*
-
-WORKDIR /var/www/app
-
-RUN chown -R $user /var/www/app
 
 USER $user
 
