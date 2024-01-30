@@ -91,7 +91,7 @@ RUN set -eux; \
     docker-php-ext-install intl pdo_pgsql pgsql exif opcache; \
     docker-php-ext-enable redis excimer intl pdo_pgsql pgsql opcache; \
     apk del --no-network .build-deps; \
-    # apk del --no-network .build-extra; \
+    apk del --no-network .build-extra; \
     rm -rf /tmp/pear ~/.pearrc; \
     php --version
 
