@@ -18,10 +18,12 @@ FROM ghcr.io/efureev/docker-php:latest
 
 ## PHP Ext List
 
-- [redis](https://pecl.php.net/package/redis)
-- pgsql
-- intl
 - [excimer](https://pecl.php.net/package/excimer)
+- exif
+- intl
+- opcache
+- pgsql
+- [redis](https://pecl.php.net/package/redis)
 
 ## Tools
 
