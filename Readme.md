@@ -1,10 +1,13 @@
 # PHP (FPM) for Laravel
 
+Base image: `php:8.3-fpm-alpine3.19`
+
 ## Use
 
 ```shell
 docker pull ghcr.io/efureev/docker-php:latest
 ```
+
 ```dockerfile
 FROM ghcr.io/efureev/docker-php:latest
 ```
