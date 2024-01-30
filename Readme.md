@@ -5,6 +5,9 @@
 ```shell
 docker pull ghcr.io/efureev/docker-php:latest
 ```
+```dockerfile
+FROM ghcr.io/efureev/docker-php:latest
+```
 
 ## Containers
 
