@@ -49,6 +49,7 @@ RUN php -m && echo "============================================="
 #### pdo_pgsql
 #### pgsql
 #### redis
+#### sockets
 
 ######## Ext Dependencies ########
 #### intl: icu-dev
@@ -79,6 +80,7 @@ RUN set -eux; \
         $PHPIZE_DEPS \
     ; \
     apk add --no-cache --virtual .build-extra \
+        linux-headers \
         libpq-dev \
         icu-dev \
     ; \
@@ -88,7 +90,7 @@ RUN set -eux; \
     ; \
     pecl update-channels; \
     pecl install --onlyreqdeps --force redis excimer; \
-    docker-php-ext-install intl pdo_pgsql pgsql exif opcache; \
+    docker-php-ext-install intl pdo_pgsql pgsql exif opcache sockets; \
     docker-php-ext-enable redis excimer intl pdo_pgsql pgsql opcache; \
     apk del --no-network .build-deps; \
 #    apk del --no-network .build-extra; \

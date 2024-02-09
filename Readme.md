@@ -24,6 +24,7 @@ FROM ghcr.io/efureev/docker-php:latest
 - opcache
 - pgsql
 - [redis](https://pecl.php.net/package/redis)
+- sockets
 
 ## Tools
 
