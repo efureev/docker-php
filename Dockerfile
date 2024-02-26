@@ -87,6 +87,7 @@ RUN set -eux; \
     apk add --no-cache \
         fcgi \
         bash \
+        micro \
     ; \
     pecl update-channels; \
     pecl install --onlyreqdeps --force redis excimer; \
@@ -96,6 +97,11 @@ RUN set -eux; \
 #    apk del --no-network .build-extra; \
     rm -rf /tmp/pear ~/.pearrc; \
     php --version
+
+
+ENV MICRO_CONFIG_HOME=/etc/micro
+RUN mkdir /etc/micro
+COPY docker/micro.json /etc/micro/settings.json
 
 RUN set -eux; \
 	{ \
