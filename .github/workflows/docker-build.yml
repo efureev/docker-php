@@ -48,11 +48,11 @@ jobs:
             
             ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
             echo "value=$ARR"
-#            echo "value=$ARR" >> $GITHUB_OUTPUT
             echo "value=[\"a\", \"b\", \"c\"]" >> $GITHUB_OUTPUT
 
         - run: |
             echo "${{ steps.matrix.outputs.value }}"
+      #            echo "value=$ARR" >> $GITHUB_OUTPUT
 
         - name: Upload Generated Dockerfiles
           uses: actions/upload-artifact@v4
