@@ -114,6 +114,9 @@ jobs:
       - name: View ID
         run: echo ${{ matrix.value }}
 
+      - name: View TAG
+        run: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
+
       - name: Kaniko build
         uses: aevea/action-kaniko@master
         with:
