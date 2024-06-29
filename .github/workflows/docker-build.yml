@@ -57,10 +57,10 @@ jobs:
 
       - run: |
           echo "${{ steps.matrix.outputs.value }}"
-          echo "${{ github.ref }}"
-          echo "${{ github.ref_type }}"
-          echo "${{ fromJSON(github) }}"
       #            echo "value=$ARR" >> $GITHUB_OUTPUT
+
+      - run: |
+          echo "${{ fromJSON(github) }}"
 
       - name: Upload Generated Dockerfiles
         uses: actions/upload-artifact@v4
