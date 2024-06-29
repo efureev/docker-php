@@ -78,7 +78,7 @@ jobs:
           for DF in $(find dockerfiles -type f); do
               echo ${DF}
               NAME=$(echo ${DF} | awk -F '.' '{print $2}')
-              TAG=$(echo ${DF} | awk -F '.' '{print $3}')
+              TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
               echo ${NAME}
               echo ${TAG}
           done
