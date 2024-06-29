@@ -79,8 +79,10 @@ jobs:
               TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
               echo "Building: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"    
               echo "From: ${DF}"    
+              cat "${DF}"
+
               docker run \
-                -v "${{ github.workspace }}/dockerfiles:/rootfs:rw" -w "/rootfs" \
+                -v "${{ github.workspace }}/dockerfiles:/dockerfiles:rw" -w "/dockerfiles" \
                 gcr.io/kaniko-project/executor \
                   --cleanup \
                   --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} \
