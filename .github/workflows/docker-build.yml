@@ -50,7 +50,7 @@ jobs:
   build-dockerimages:
     runs-on: ubuntu-latest
 
-    needs: build-dockerfiles
+    needs: generate-dockerfiles
 
     permissions:
       contents: read
