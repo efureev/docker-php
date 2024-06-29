@@ -100,7 +100,7 @@ jobs:
 
       - name: Create a Tag
         id: create-tag
-        run: echo tag=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
+        run: echo tag={${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'} >> $GITHUB_OUTPUT
 
       - name: View Tag
         run: echo ${{ steps.create-tag.outputs.tag }}
