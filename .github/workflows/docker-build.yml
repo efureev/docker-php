@@ -47,7 +47,12 @@ jobs:
             done
             
             echo "list: ${LIST}"
-            printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .
+            ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
+            echo "value=$ARR"
+            echo "value=$ARR" >> $GITHUB_OUTPUT
+
+        - run: |
+            echo "${{ steps.matrix.outputs.value }}"
 
         - name: Upload Generated Dockerfiles
           uses: actions/upload-artifact@v4
@@ -68,6 +73,17 @@ jobs:
 #            type=raw,value=dev-{{date 'YYYYMMDDhhmm'}}.{{sha}},enable=${{ github.ref_type != 'tag' }}
 #            type=raw,value=latest,enable={{is_default_branch}}
 #            type=sha
+
+  test-dockerimages:
+    runs-on: ubuntu-latest
+
+    needs: generate-dockerfiles
+    strategy:
+      matrix:
+        value: ${{ fromJSON(needs.generate-dockerfiles.output.matrix) }}
+    steps:
+      - run: |
+          echo "${{ matrix.value }}"
 
   build-dockerimages:
     runs-on: ubuntu-latest
