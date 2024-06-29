@@ -128,7 +128,7 @@ jobs:
           context: .
           push: true
 #          push: ${{ startsWith(github.ref, 'refs/tags/') }}
-          tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.create-tag.output.tag }}"
+          tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.create-tag.outputs.tag }}"
 
       - name: Kaniko build
         run: echo "- PHP:${{steps.create-tag.output.tag}} :rocket:" >> $GITHUB_STEP_SUMMARY
