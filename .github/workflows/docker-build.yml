@@ -46,10 +46,10 @@ jobs:
               LIST+=("${DF}")
             done
             
-            echo "list: ${LIST}"
             ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
             echo "value=$ARR"
-            echo "value=$ARR" >> $GITHUB_OUTPUT
+#            echo "value=$ARR" >> $GITHUB_OUTPUT
+            echo "value=[\"a\", \"b\", \"c\"]" >> $GITHUB_OUTPUT
 
         - run: |
             echo "${{ steps.matrix.outputs.value }}"
@@ -80,7 +80,7 @@ jobs:
     needs: generate-dockerfiles
     strategy:
       matrix:
-        value: ${{ fromJSON(needs.generate-dockerfiles.output.matrix) }}
+        value: ${{fromJSON(needs.generate-dockerfiles.outputs.matrix)}}
     steps:
       - run: |
           echo "${{ matrix.value }}"
