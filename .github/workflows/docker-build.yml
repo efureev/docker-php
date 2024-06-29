@@ -73,25 +73,28 @@ jobs:
       - name: View Dockerfile list
         run: ls -la ${{ github.workspace }}/dockerfiles
 
-      - name: View Dockerfile list
+      - name: Build Dockerfiles
         run: |
           for DF in $(find dockerfiles -type f); do
-              echo ${DF}
-              NAME=$(echo ${DF} | awk -F '.' '{print $2}')
               TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
-              echo ${NAME}
-              echo ${TAG}
+              echo "Building: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"    
+              docker run \
+                -v "${{ github.workspace }}/dockerfiles:/rootfs:rw" -w "/rootfs" \
+                gcr.io/kaniko-project/executor:debug \
+                  --cleanup \
+                  --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} \
+                  --dockerfile ${DF}
           done
-          echo "${IMAGE_NAME}:8.3-prod-alpine"
-
-      - name: Build
-        run: |
-            docker run -it --rm \
-              -v "${{ github.workspace }}/dockerfiles:/rootfs:rw" -w "/rootfs" \
-              gcr.io/kaniko-project/executor:debug \
-                --cleanup \
-                --destination ${IMAGE_NAME}:8.3-prod-alpine
-                --dockerfile Dockerfile.php.8.3-fpm-prod-alpine
+          
+#
+#      - name: Build
+#        run: |
+#            docker run --rm \
+#              -v "${{ github.workspace }}/dockerfiles:/rootfs:rw" -w "/rootfs" \
+#              gcr.io/kaniko-project/executor:debug \
+#                --cleanup \
+#                --destination ${IMAGE_NAME}:8.3-prod-alpine
+#                --dockerfile Dockerfile.php.8.3-fpm-prod-alpine
 #      - name: Download Generated Dockerfiles
 #        uses: actions/download-artifact@v3
 #        with:
