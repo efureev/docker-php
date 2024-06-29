@@ -35,6 +35,11 @@ jobs:
         - name: View Dockerfile list
           run: ls -la ${{ github.workspace }}/dockerfiles
 
+        - name: Upload Generated Dockerfiles
+          uses: actions/upload-artifact@v4
+          with:
+            name: dockerfiles
+            path: dockerfiles
 #      - name: Docker metadata
 #        id: metadata
 #        uses: docker/metadata-action@v5
@@ -57,9 +62,18 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+#      - uses: actions/checkout@v4
+
+      - name: Download Generated Dockerfiles
+        uses: actions/download-artifact@v4
+        with:
+          name: dockerfiles
+          path: dockerfiles
 
       - name: View Dockerfile list
+        run: ls -la dockerfiles
+
+      - name: View Dockerfile list2
         run: ls -la ${{ github.workspace }}/dockerfiles
 
 #      - name: Download Generated Dockerfiles
