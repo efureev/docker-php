@@ -40,6 +40,10 @@ jobs:
 
         - id: matrix
           run: |
+            echo value=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
+
+        - id: matrix2
+          run: |
             LIST=()
             
             for DF in $(find dockerfiles -type f); do
