@@ -14,7 +14,7 @@ envs:
   common:
     install:
       tools: "bash curl fcgi"
-      exts: "igbinary intl bcmath pdo_pgsql pgsql pcntl redis"
+      exts: "igbinary intl bcmath pdo_pgsql pgsql pcntl redis zip"
     os:
       user: app
       uid: 1000
