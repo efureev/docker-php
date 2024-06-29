@@ -15,6 +15,9 @@ jobs:
   generate-dockerfiles:
     runs-on: ubuntu-latest
 
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+
     permissions:
       contents: read
 
@@ -35,11 +38,25 @@ jobs:
         - name: View Dockerfile list
           run: ls -la ${{ github.workspace }}/dockerfiles
 
+        - id: matrix
+          run: |
+            LIST=()
+            
+            for DF in $(find dockerfiles -type f); do
+              LIST+=("${DF}")
+            done
+            
+            echo "list: ${LIST}"
+            printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .
+
         - name: Upload Generated Dockerfiles
           uses: actions/upload-artifact@v4
           with:
             name: dockerfiles
             path: dockerfiles
+
+
+
 #      - name: Docker metadata
 #        id: metadata
 #        uses: docker/metadata-action@v5
