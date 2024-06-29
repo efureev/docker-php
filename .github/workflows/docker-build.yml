@@ -59,9 +59,6 @@ jobs:
           echo "${{ steps.matrix.outputs.value }}"
       #            echo "value=$ARR" >> $GITHUB_OUTPUT
 
-      - run: |
-          echo "${{ fromJSON(github) }}"
-
       - name: Upload Generated Dockerfiles
         uses: actions/upload-artifact@v4
         with:
@@ -118,8 +115,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: View ID
+      - name: Create a Tag
+        run: echo tag=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
+
+      - name: View matrix value
         run: echo ${{ matrix.value }}
+
+      - name: View matrix tag
+        run: echo ${{ matrix.tag }}
 
       - name: View TAG
         run: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
