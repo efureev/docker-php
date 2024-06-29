@@ -34,14 +34,15 @@ FROM ghcr.io/efureev/docker-php:8.3-fpm-prod-alpine
 
 ### PROD version
 
+- bcmath
 - igbinary
 - intl
-- bcmath
+- opcache
+- pcntl
 - pdo_pgsql
 - pgsql
-- pcntl
 - redis
-- opcache
+- zip
 
 ### DEV version
 
@@ -54,9 +55,9 @@ FROM ghcr.io/efureev/docker-php:8.3-fpm-prod-alpine
 ### PROD version
 
 - bash
-- fcgi
-- curl
 - composer
+- curl
+- fcgi
 
 ### DEV version
 
