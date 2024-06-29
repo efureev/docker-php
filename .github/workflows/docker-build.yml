@@ -121,8 +121,8 @@ jobs:
           build_file: ${{ matrix.value }}
           tag: $(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/')
           image: ${{ env.IMAGE_NAME }}
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           cache: true
           cache_registry: aevea/cache
 
