@@ -1,0 +1,39 @@
+php:
+  from_image_base: alpine
+  versions:
+    - version: 8.2
+    - version: 8.3
+
+  kinds:
+    - name: cli # php:8.3-cli-alpine as cli
+      from_image_part: cli
+
+    - name: fpm # php:8.3-fpm-alpine
+      from_image_part: fpm
+envs:
+  common:
+    install:
+      tools: "bash curl fcgi"
+      exts: "igbinary intl bcmath pdo_pgsql pgsql pcntl redis"
+    os:
+      user: app
+      uid: 1000
+  list:
+    - name: prod
+      install:
+#        tools: ""
+        exts: "opcache"
+        extra: "exif sockets"
+      healthcheck:
+        install: true
+        enable: true
+      composer: true
+    - name: dev
+      install:
+        tools: "git"
+        exts: "opcache excimer xdebug"
+        extra: "exif sockets"
+      healthcheck:
+        install: true
+        enable: false
+      composer: true
