@@ -103,10 +103,10 @@ jobs:
         run: echo tag=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
 
       - name: View Tag
-        run: echo ${{ steps.create-tag.output.tag }}
+        run: echo ${{ steps.create-tag.outputs.tag }}
 
       - name: View Test
-        run: echo ${{ steps.create-test.output.test }}
+        run: echo ${{ steps.create-test.outputs.test }}
 
 #      - name: View matrix tag
 #        run: echo ${{ matrix }}
