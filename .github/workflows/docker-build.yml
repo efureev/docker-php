@@ -57,6 +57,9 @@ jobs:
 
       - run: |
           echo "${{ steps.matrix.outputs.value }}"
+          echo "${{ github.ref }}"
+          echo "${{ github.ref_type }}"
+          echo "${{ fromJSON(github) }}"
       #            echo "value=$ARR" >> $GITHUB_OUTPUT
 
       - name: Upload Generated Dockerfiles
@@ -103,13 +106,17 @@ jobs:
       packages: write
 
     steps:
-      #      - uses: actions/checkout@v4
-
       - name: Download Generated Dockerfiles
         uses: actions/download-artifact@v4
         with:
           name: dockerfiles
           path: dockerfiles
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: View ID
         run: echo ${{ matrix.value }}
@@ -117,14 +124,26 @@ jobs:
       - name: View TAG
         run: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
 
-      - name: Kaniko build
-        uses: aevea/action-kaniko@master
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAME: ${{ github.repository }}
         with:
-          registry: ${{ env.REGISTRY }}
-          build_file: ${{ matrix.value }}
-          tag: echo $(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/')
-          image: ${{ env.IMAGE_NAME }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          context: .
+          #          push: true
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+
+#      - name: Kaniko build
+#        uses: aevea/action-kaniko@master
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          build_file: ${{ matrix.value }}
+#          tag: echo $(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/')
+#          image: ${{ env.IMAGE_NAME }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
 #          cache: true
 #          cache_registry: aevea/cache
 
