@@ -1,15 +1,29 @@
-# PHP (FPM) for Laravel
+# PHP in Docker
 
-Base image: `php:8.3-fpm-alpine3.19`
+Ready for use in Laravel.
+
+Basic image: `alpine:latest`
+
+## Images version
+
+All images have `DEV` or `PROD` versions.
+
+## Images list
+
+- 8.2-cli
+- 8.2-fpm
+- 8.3-cli
+- 8.3-fpm
 
 ## Use
 
 ```shell
-docker pull ghcr.io/efureev/docker-php:latest
+docker pull ghcr.io/efureev/docker-php:8.3-fpm-prod-alpine
+docker pull ghcr.io/efureev/docker-php:8.3-cli-dev-alpine
 ```
 
 ```dockerfile
-FROM ghcr.io/efureev/docker-php:latest
+FROM ghcr.io/efureev/docker-php:8.3-fpm-prod-alpine
 ```
 
 ## Containers
@@ -18,20 +32,36 @@ FROM ghcr.io/efureev/docker-php:latest
 
 ## PHP Ext List
 
-- [excimer](https://pecl.php.net/package/excimer)
-- exif
+### PROD version
+
+- igbinary
 - intl
-- opcache
+- bcmath
+- pdo_pgsql
 - pgsql
-- [redis](https://pecl.php.net/package/redis)
-- sockets
+- pcntl
+- redis
+- opcache
+
+### DEV version
+
+- all PROD version`s exts
+- [excimer](https://pecl.php.net/package/excimer)
+- xdebug
 
 ## Tools
+
+### PROD version
 
 - bash
 - fcgi
 - curl
 - composer
+
+### DEV version
+
+- all PROD version`s tools
+- git
 
 ## NB
 

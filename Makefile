@@ -17,27 +17,11 @@ compose:
                --out.dir ./dockerfiles \
                --verbose --debug
 
-kaniko: ## Build docker image
-	docker run -it --rm \
-            	-v "$(shell pwd)/dockerfiles:/rootfs:rw" -w "/rootfs" \
-			gcr.io/kaniko-project/executor:debug \
-				--cleanup \
-				--no-push \
-            	--dockerfile Dockerfile.php.8.3-fpm-prod-alpine
-
 lint:
 	docker run -i --rm ghcr.io/hadolint/hadolint < dockerfiles/Dockerfile.php.8.3-fpm-prod-alpine
 
 build: ## Build docker image
 	docker build -t ghcr.io/efureev/docker-php .
-
-b: ## Build docker image
-	docker build --progress=plain \
-		-f ./dockerfiles/Dockerfile.php.8.3-fpm-prod-alpine \
-		-t ghcr.io/efureev/php.8.3-fpm-prod-alpine .
-
-u: ## Run image
-	docker container run --name php83-fpm --rm -ti ghcr.io/efureev/php.8.3-fpm-prod-alpine
 
 push: ## Push image
 	docker push ghcr.io/efureev/docker-php

@@ -7,10 +7,6 @@ on:
       - '*/*'
       - '**'
 
-#env:
-#  REGISTRY: ghcr.io
-#  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   generate-dockerfiles:
     runs-on: ubuntu-latest
@@ -50,21 +46,6 @@ jobs:
         with:
           name: dockerfiles
           path: dockerfiles
-
-
-
-  #      - name: Docker metadata
-  #        id: metadata
-  #        uses: docker/metadata-action@v5
-  #        with:
-  #          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-  #          tags: |
-  #            type=semver,pattern={{version}}
-  #            type=semver,pattern={{major}}.{{minor}}
-  #            type=raw,value=dev-{{date 'YYYYMMDDhhmm'}}.{{sha}},enable=${{ github.ref_type != 'tag' }}
-  #            type=raw,value=latest,enable={{is_default_branch}}
-  #            type=sha
-
 
   build-dockerimages:
     runs-on: ubuntu-latest
@@ -109,99 +90,19 @@ jobs:
       - name: View Test
         run: echo ${{ steps.create-test.outputs.test }}
 
-#      - name: View matrix tag
-#        run: echo ${{ matrix }}
-#
-#      - name: View TAG
-#        run: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
-
       - name: View Repo
         run: |
-            echo ${{ env.REGISTRY }}
-            echo ${{ env.IMAGE_NAME }}
+          echo ${{ env.REGISTRY }}
+          echo ${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
-#        env:
-#          REGISTRY: ${{ env.REGISTRY }}
-#          IMAGE_NAME: ${{ github.repository }}
         with:
           context: .
           file: ${{ matrix.value }}
           push: true
-#          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          #          push: ${{ startsWith(github.ref, 'refs/tags/') }}
           tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.create-tag.outputs.tag }}"
 
       - name: Summary
         run: echo "- PHP:${{ steps.create-tag.outputs.tag }} :rocket:" >> $GITHUB_STEP_SUMMARY
-
-
-#      - name: Build Dockerfiles
-#        run: |
-#          for DF in $(find dockerfiles -type f); do
-#              TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
-#              echo "Building: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"
-#              echo "From: ${DF}"
-#
-#              docker run \
-#                -v "${{ github.workspace }}/dockerfiles:/dockerfiles:rw" -w "/dockerfiles" \
-#                gcr.io/kaniko-project/executor \
-#                  --cleanup \
-#                  --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} \
-#                  --dockerfile /${DF}
-#          done
-
-#
-#      - name: Build
-#        run: |
-#            docker run --rm \
-#              -v "${{ github.workspace }}/dockerfiles:/rootfs:rw" -w "/rootfs" \
-#              gcr.io/kaniko-project/executor:debug \
-#                --cleanup \
-#                --destination ${IMAGE_NAME}:8.3-prod-alpine
-#                --dockerfile Dockerfile.php.8.3-fpm-prod-alpine
-#      - name: Download Generated Dockerfiles
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: dockerfiles
-#          path: ${{ github.workspace }}/dockerfiles
-#
-#      - name: Login to GitHub Container Registry
-#        uses: docker/login-action@v2
-#        with:
-#          registry: ${{ env.REGISTRY }}
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Set Image Tag
-#        run: |
-#          echo "IMAGE_TAG=$(echo ${{ matrix.dockerfile }} | cut -d '.' -f 3)" >> $GITHUB_ENV
-#          ls -la ${{ github.workspace }}/dockerfiles
-#
-#      - name: Build and Push
-#        uses: docker/build-push-action@v4
-#        with:
-#          push: true
-#          context: ${{ github.workspace }}
-#          file: ${{ github.workspace }}/dockerfiles/${{ matrix.dockerfile }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-#
-#  test-dockerimages:
-#    runs-on: ubuntu-latest
-#
-#    needs: build-dockerimages
-#
-#    strategy:
-#      matrix:
-#        tags: [dev, dev-debug]
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#
-#      - name: Test
-#        run: |
-#          docker run --rm \
-#            -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} \
-#            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tags }} \
-#            --config dtpl.dev.yml -v -y
