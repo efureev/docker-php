@@ -78,9 +78,10 @@ jobs:
           for DF in $(find dockerfiles -type f); do
               TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
               echo "Building: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"    
+              echo "From: ${DF}"    
               docker run \
                 -v "${{ github.workspace }}/dockerfiles:/rootfs:rw" -w "/rootfs" \
-                gcr.io/kaniko-project/executor:debug \
+                gcr.io/kaniko-project/executor \
                   --cleanup \
                   --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} \
                   --dockerfile ${DF}
