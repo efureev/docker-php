@@ -42,22 +42,8 @@ jobs:
         run: |
           echo value=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
 
-      #        - id: matrix2
-      #          run: |
-      #            LIST=()
-      #
-      #            for DF in $(find dockerfiles -type f); do
-      #              LIST+=("${DF}")
-      #            done
-      #
-      #            ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
-      #
-      #            echo "value=$ARR"
-      #            echo "value=[\"a\", \"b\", \"c\"]"
-
       - run: |
           echo "${{ steps.matrix.outputs.value }}"
-      #            echo "value=$ARR" >> $GITHUB_OUTPUT
 
       - name: Upload Generated Dockerfiles
         uses: actions/upload-artifact@v4
@@ -79,16 +65,6 @@ jobs:
   #            type=raw,value=latest,enable={{is_default_branch}}
   #            type=sha
 
-#  test-dockerimages:
-#    runs-on: ubuntu-latest
-#
-#    needs: generate-dockerfiles
-#    strategy:
-#      matrix:
-#        value: ${{fromJSON(needs.generate-dockerfiles.outputs.matrix)}}
-#    steps:
-#      - run: |
-#          echo "${{ matrix.value }}"
 
   build-dockerimages:
     runs-on: ubuntu-latest
@@ -115,20 +91,21 @@ jobs:
       - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create a Tag
+        id: create-tag
         run: echo tag=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
 
-      - name: View matrix value
-        run: echo ${{ matrix.value }}
+      - name: View Tag
+        run: echo ${{ steps.create-tag.output.tag }}
 
-      - name: View matrix tag
-        run: echo ${{ matrix.tag }}
-
-      - name: View TAG
-        run: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
+#      - name: View matrix tag
+#        run: echo ${{ matrix }}
+#
+#      - name: View TAG
+#        run: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
 
       - name: View Repo
         run: |
@@ -144,8 +121,7 @@ jobs:
           context: .
           push: true
 #          push: ${{ startsWith(github.ref, 'refs/tags/') }}
-          tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}"
-          labels: ${{ matrix.tag }}
+          tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.create-tag.output.tag }}"
 
 #      - name: Kaniko build
 #        uses: aevea/action-kaniko@master
