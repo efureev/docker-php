@@ -47,8 +47,8 @@ jobs:
             done
             
             ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
-            echo "value=$ARR"
-            echo "value=[\"a\", \"b\", \"c\"]" >> $GITHUB_OUTPUT
+            echo "value=$ARR" >> $GITHUB_OUTPUT
+            echo "$GITHUB_OUTPUT"
 
         - run: |
             echo "${{ steps.matrix.outputs.value }}"
