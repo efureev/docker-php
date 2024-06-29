@@ -79,16 +79,16 @@ jobs:
   #            type=raw,value=latest,enable={{is_default_branch}}
   #            type=sha
 
-  test-dockerimages:
-    runs-on: ubuntu-latest
-
-    needs: generate-dockerfiles
-    strategy:
-      matrix:
-        value: ${{fromJSON(needs.generate-dockerfiles.outputs.matrix)}}
-    steps:
-      - run: |
-          echo "${{ matrix.value }}"
+#  test-dockerimages:
+#    runs-on: ubuntu-latest
+#
+#    needs: generate-dockerfiles
+#    strategy:
+#      matrix:
+#        value: ${{fromJSON(needs.generate-dockerfiles.outputs.matrix)}}
+#    steps:
+#      - run: |
+#          echo "${{ matrix.value }}"
 
   build-dockerimages:
     runs-on: ubuntu-latest
@@ -122,11 +122,11 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           build_file: ${{ matrix.value }}
-          tag: $(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/')
+          tag: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
           image: ${{ env.IMAGE_NAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          cache: true
-          cache_registry: aevea/cache
+#          cache: true
+#          cache_registry: aevea/cache
 
 
 #      - name: Build Dockerfiles
