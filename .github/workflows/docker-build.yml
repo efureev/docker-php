@@ -134,10 +134,10 @@ jobs:
           IMAGE_NAME: ${{ github.repository }}
         with:
           context: .
-          #          push: true
-          push: ${{ startsWith(github.ref, 'refs/tags/') }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          push: true
+#          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          tags: ${{ matrix.tag }}
+#          labels: ${{ steps.metadata.outputs.labels }}
 
 #      - name: Kaniko build
 #        uses: aevea/action-kaniko@master
