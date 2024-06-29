@@ -1,8 +1,3 @@
-FROM php:8.3-fpm-alpine3.19
-
-ARG user=app
-ARG uid=1000
-
 ######## [PHP Modules] Default ########
 #### Core
 #### ctype
@@ -38,6 +33,18 @@ ARG uid=1000
 #### xmlwriter
 #### zlib
 
+ARG PHP_EXTS="intl pdo_pgsql pgsql exif opcache sockets bcmath ctype fileinfo mbstring pdo pgsql  dom pcntl"
+ARG TOOLS_TO_ADD="micro fcgi bash"
+## redis excimer intl pdo_pgsql pgsql opcache
+ARG PHP_PECL_EXTS="redis excimer"
+
+FROM php:8.3-fpm-alpine3.19
+
+ARG PHP_EXTS
+ARG PHP_PECL_EXTS
+ARG TOOLS_TO_ADD
+ARG user=app
+ARG uid=1000
 
 RUN php -m && echo "============================================="
 
@@ -77,39 +84,40 @@ RUN set -eux; \
     # workaround for rabbitmq linking issue \
     ln -s /usr/lib /usr/local/lib64; \
     apk add --no-cache --virtual .build-deps \
-        $PHPIZE_DEPS \
+        ${PHPIZE_DEPS} openssl ca-certificates libxml2-dev oniguruma-dev \
     ; \
     apk add --no-cache --virtual .build-extra \
         linux-headers \
         libpq-dev \
         icu-dev \
     ; \
-    apk add --no-cache \
-        fcgi \
-        bash \
-        micro \
-    ; \
+    apk add --no-cache ${TOOLS_TO_ADD}
+
+RUN set -eux; \
+    docker-php-ext-install -j$(nproc) ${PHP_EXTS}
+
+RUN set -eux; \
     pecl update-channels; \
-    pecl install --onlyreqdeps --force redis excimer; \
-    docker-php-ext-install intl pdo_pgsql pgsql exif opcache sockets; \
-    docker-php-ext-enable redis excimer intl pdo_pgsql pgsql opcache; \
+    pecl install --onlyreqdeps --force ${PHP_PECL_EXTS}; \
+    docker-php-ext-enable ${PHP_PECL_EXTS} ; \
     apk del --no-network .build-deps; \
 #    apk del --no-network .build-extra; \
     rm -rf /tmp/pear ~/.pearrc; \
-    php --version
+    php --version; \
+    php -m
 
 
 ENV MICRO_CONFIG_HOME=/etc/micro
 RUN mkdir /etc/micro
-COPY docker/micro.json /etc/micro/settings.json
+COPY configs/micro.json /etc/micro/settings.json
 
 RUN set -eux; \
 	{ \
 		echo '[www]'; \
 		echo 'ping.path = /ping'; \
-	} | tee /usr/local/etc/php-fpm.d/docker-healthcheck.conf
+	} | tee /usr/local/etc/php-fpm.d/configs-healthcheck.conf
 
-COPY docker/php/docker-healthcheck.sh /usr/local/bin/docker-healthcheck
+COPY configs/php/docker-healthcheck.sh /usr/local/bin/docker-healthcheck
 RUN chmod +x /usr/local/bin/docker-healthcheck
 #HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["docker-healthcheck"]
 

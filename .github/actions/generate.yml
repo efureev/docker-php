@@ -1,0 +1,17 @@
+# action.yml
+name: 'generate'
+inputs:
+  templater:
+    dockerfile: 'dockerfile.tpl'
+    dockerfile.tpldir: './includes'
+    variants.def: 'variants.yml.tmp'
+    variants.cfg: 'variants.cfg.yml'
+    out.dir: 'dockerfiles'
+outputs:
+  time: # id of output
+    description: 'The time we greeted you'
+runs:
+  using: 'docker'
+  image: 'ghcr.io/bossm8/dockerfile-templater'
+  args:
+    - ${{ inputs.templater }}

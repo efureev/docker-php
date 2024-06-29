@@ -1,0 +1,148 @@
+name: Build Templater Docker Images
+
+on:
+  push:
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  generate-dockerfiles:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+        - uses: actions/checkout@v4
+
+        - name: Generate Dockerfiles
+          run: |
+            docker run --rm \
+                -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} \
+                ghcr.io/bossm8/dockerfile-templater:debug \
+                  --dockerfile.tpl ${{ github.workspace }}/dockerfile.tpl \
+                  --dockerfile.tpldir ${{ github.workspace }}/includes \
+                  --variants.def ${{ github.workspace }}/variants.yml.tmp \
+                  --variants.cfg ${{ github.workspace }}/variants.cfg.yml \
+                  --out.dir ${{ github.workspace }}/dockerfiles
+
+        - name: View Dockerfile list
+          run: ls -la ${{ github.workspace }}/dockerfiles
+#
+#        - uses: docker://ghcr.io/bossm8/dockerfile-templater:debug
+#          with: {entrypoint: ./generate.sh}
+#        - uses: ./.github/actions/generate
+#
+#        - name: Generate Dockerfiles
+#          run: docker run --rm \
+#                -v "${{ github.workspace }}:/rootfs" -w "/rootfs" \
+#                ghcr.io/bossm8/dockerfile-templater:debug \
+#                  --dockerfile.tpl ${{ github.workspace }}/dockerfile.tpl \
+#                  --dockerfile.tpldir ${{ github.workspace }}/includes \
+#                  --variants.def ${{ github.workspace }}/variants.yml.tmp \
+#                  --variants.cfg ${{ github.workspace }}/variants.cfg.yml \
+#                  --out.dir ${{ github.workspace }}/dockerfiles
+
+#        - name: Archive production artifacts
+#          uses: actions/upload-artifact@v4
+#          with:
+#              name: dist-without-markdown
+#              path: |
+#                dist
+#                !dist/**/*.md
+
+
+
+
+#      - name: Docker metadata
+#        id: metadata
+#        uses: docker/metadata-action@v5
+#        with:
+#          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+#          tags: |
+#            type=semver,pattern={{version}}
+#            type=semver,pattern={{major}}.{{minor}}
+#            type=raw,value=dev-{{date 'YYYYMMDDhhmm'}}.{{sha}},enable=${{ github.ref_type != 'tag' }}
+#            type=raw,value=latest,enable={{is_default_branch}}
+#            type=sha
+
+
+#      - name: Generate Dockerfiles
+#        run: |
+#          go run main.go \
+#            --config dtpl.dev.yml
+#
+#      - name: Upload Generated Dockerfiles
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: dockerfiles
+#          path: dockerfiles
+
+#  build-dockerimages:
+#    runs-on: ubuntu-latest
+#
+#    needs: build-dockerfiles
+#
+#    strategy:
+#      matrix:
+#        dockerfile: [Dockerfile.templater.dev, Dockerfile.templater.dev-debug]
+#
+#    permissions:
+#      contents: read
+#      packages: write
+#
+#    steps:
+#
+#      - uses: actions/checkout@v3
+#
+#      - name: Download Generated Dockerfiles
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: dockerfiles
+#          path: ${{ github.workspace }}/dockerfiles
+#
+#      - name: Login to GitHub Container Registry
+#        uses: docker/login-action@v2
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Set Image Tag
+#        run: |
+#          echo "IMAGE_TAG=$(echo ${{ matrix.dockerfile }} | cut -d '.' -f 3)" >> $GITHUB_ENV
+#          ls -la ${{ github.workspace }}/dockerfiles
+#
+#      - name: Build and Push
+#        uses: docker/build-push-action@v4
+#        with:
+#          push: true
+#          context: ${{ github.workspace }}
+#          file: ${{ github.workspace }}/dockerfiles/${{ matrix.dockerfile }}
+#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+#
+#  test-dockerimages:
+#    runs-on: ubuntu-latest
+#
+#    needs: build-dockerimages
+#
+#    strategy:
+#      matrix:
+#        tags: [dev, dev-debug]
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#
+#      - name: Test
+#        run: |
+#          docker run --rm \
+#            -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} \
+#            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tags }} \
+#            --config dtpl.dev.yml -v -y

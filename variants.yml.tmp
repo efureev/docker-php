@@ -1,0 +1,29 @@
+variants:
+
+{{- range .php.versions }}
+  {{- $i := . }}
+    {{- range $.envs.list }}
+      {{- $e := . }}
+        {{- range $.php.kinds }}
+        {{- $kind := . }}
+  - name: "php-{{ $i.version }}-{{ $kind.name }} [{{ $e.name }}] ({{ $.php.from_image_base }})"
+    image:
+      name: php
+      tag: {{ $i.version }}-{{ $kind.name }}-{{ $e.name }}-{{ $.php.from_image_base }}
+    from_image: php:{{ $i.version }}-{{ $kind.name }}-{{ $.php.from_image_base }}
+    env: {{ $e.name }}
+    os:
+      user: {{if $.envs.common.os.user }}{{$.envs.common.os.user}}{{else}}app{{end}}
+      uid: {{if $.envs.common.os.uid }}{{$.envs.common.os.uid}}{{else}}1000{{end}}
+    install:
+      tools: {{ $.envs.common.install.tools }} {{if $e.install.tools}} {{ $e.install.tools }} {{end}}
+      exts: {{ $.envs.common.install.exts }} {{if $e.install.exts}}{{ $e.install.exts }}{{else}} nil {{end}}
+{{- if eq $kind.name "fpm"}}
+    healthcheck:
+      install: {{ $e.healthcheck.install }}
+      enable: {{ $e.healthcheck.enable }}
+{{- end }}
+    composer: {{if $e.composer}}true{{else}}false{{end}}
+    {{- end }}
+  {{- end }}
+{{- end }}
