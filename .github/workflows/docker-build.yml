@@ -144,8 +144,8 @@ jobs:
           context: .
           push: true
 #          push: ${{ startsWith(github.ref, 'refs/tags/') }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
-#          labels: ${{ steps.metadata.outputs.labels }}
+          tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}"
+          labels: ${{ matrix.tag }}
 
 #      - name: Kaniko build
 #        uses: aevea/action-kaniko@master
