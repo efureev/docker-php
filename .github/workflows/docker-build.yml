@@ -82,6 +82,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
 
     steps:
+      - uses: actions/checkout@v4
       - name: Download Generated Dockerfiles
         uses: actions/download-artifact@v4
         with:
