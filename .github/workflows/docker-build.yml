@@ -122,7 +122,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           build_file: ${{ matrix.value }}
-          tag: echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/'
+          tag: echo $(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/')
           image: ${{ env.IMAGE_NAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
 #          cache: true
