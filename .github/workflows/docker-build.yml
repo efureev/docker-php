@@ -76,19 +76,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create a Test
-        id: create-test
-        run: echo "test=test123" >> $GITHUB_OUTPUT
-
       - name: Create a Tag
         id: create-tag
         run: echo tag=$(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/') >> $GITHUB_OUTPUT
 
       - name: View Tag
         run: echo ${{ steps.create-tag.outputs.tag }}
-
-      - name: View Test
-        run: echo ${{ steps.create-test.outputs.test }}
 
       - name: View Repo
         run: |
@@ -103,6 +96,10 @@ jobs:
           push: true
           #          push: ${{ startsWith(github.ref, 'refs/tags/') }}
           tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.create-tag.outputs.tag }}"
+
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: dockerfiles
 
       - name: Summary
         run: echo "- PHP:${{ steps.create-tag.outputs.tag }} :rocket:" >> $GITHUB_STEP_SUMMARY
