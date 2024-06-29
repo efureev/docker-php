@@ -22,62 +22,62 @@ jobs:
       contents: read
 
     steps:
-        - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-        - name: Generate Dockerfiles
-          run: |
-            docker run --rm \
-                -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} \
-                ghcr.io/bossm8/dockerfile-templater:debug \
-                  --dockerfile.tpl ${{ github.workspace }}/dockerfile.tpl \
-                  --dockerfile.tpldir ${{ github.workspace }}/includes \
-                  --variants.def ${{ github.workspace }}/variants.yml.tmp \
-                  --variants.cfg ${{ github.workspace }}/variants.cfg.yml \
-                  --out.dir ${{ github.workspace }}/dockerfiles
+      - name: Generate Dockerfiles
+        run: |
+          docker run --rm \
+              -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} \
+              ghcr.io/bossm8/dockerfile-templater:debug \
+                --dockerfile.tpl ${{ github.workspace }}/dockerfile.tpl \
+                --dockerfile.tpldir ${{ github.workspace }}/includes \
+                --variants.def ${{ github.workspace }}/variants.yml.tmp \
+                --variants.cfg ${{ github.workspace }}/variants.cfg.yml \
+                --out.dir ${{ github.workspace }}/dockerfiles
 
-        - name: View Dockerfile list
-          run: ls -la ${{ github.workspace }}/dockerfiles
+      - name: View Dockerfile list
+        run: ls -la ${{ github.workspace }}/dockerfiles
 
-        - id: matrix
-          run: |
-            echo value=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
+      - id: matrix
+        run: |
+          echo value=$(jq -nc '$ARGS.positional' --args $(find dockerfiles -type f)) >> $GITHUB_OUTPUT
 
-        - id: matrix2
-          run: |
-            LIST=()
-            
-            for DF in $(find dockerfiles -type f); do
-              LIST+=("${DF}")
-            done
-            
-            ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
-          
-            echo "value=$ARR"
-            echo "value=[\"a\", \"b\", \"c\"]"
+      #        - id: matrix2
+      #          run: |
+      #            LIST=()
+      #
+      #            for DF in $(find dockerfiles -type f); do
+      #              LIST+=("${DF}")
+      #            done
+      #
+      #            ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
+      #
+      #            echo "value=$ARR"
+      #            echo "value=[\"a\", \"b\", \"c\"]"
 
-        - run: |
-            echo "${{ steps.matrix.outputs.value }}"
+      - run: |
+          echo "${{ steps.matrix.outputs.value }}"
       #            echo "value=$ARR" >> $GITHUB_OUTPUT
 
-        - name: Upload Generated Dockerfiles
-          uses: actions/upload-artifact@v4
-          with:
-            name: dockerfiles
-            path: dockerfiles
+      - name: Upload Generated Dockerfiles
+        uses: actions/upload-artifact@v4
+        with:
+          name: dockerfiles
+          path: dockerfiles
 
 
 
-#      - name: Docker metadata
-#        id: metadata
-#        uses: docker/metadata-action@v5
-#        with:
-#          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-#          tags: |
-#            type=semver,pattern={{version}}
-#            type=semver,pattern={{major}}.{{minor}}
-#            type=raw,value=dev-{{date 'YYYYMMDDhhmm'}}.{{sha}},enable=${{ github.ref_type != 'tag' }}
-#            type=raw,value=latest,enable={{is_default_branch}}
-#            type=sha
+  #      - name: Docker metadata
+  #        id: metadata
+  #        uses: docker/metadata-action@v5
+  #        with:
+  #          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+  #          tags: |
+  #            type=semver,pattern={{version}}
+  #            type=semver,pattern={{major}}.{{minor}}
+  #            type=raw,value=dev-{{date 'YYYYMMDDhhmm'}}.{{sha}},enable=${{ github.ref_type != 'tag' }}
+  #            type=raw,value=latest,enable={{is_default_branch}}
+  #            type=sha
 
   test-dockerimages:
     runs-on: ubuntu-latest
@@ -94,13 +94,16 @@ jobs:
     runs-on: ubuntu-latest
 
     needs: generate-dockerfiles
+    strategy:
+      matrix:
+        value: ${{fromJSON(needs.generate-dockerfiles.outputs.matrix)}}
 
     permissions:
       contents: read
       packages: write
 
     steps:
-#      - uses: actions/checkout@v4
+      #      - uses: actions/checkout@v4
 
       - name: Download Generated Dockerfiles
         uses: actions/download-artifact@v4
@@ -108,24 +111,37 @@ jobs:
           name: dockerfiles
           path: dockerfiles
 
-      - name: View Dockerfile list
-        run: ls -la ${{ github.workspace }}/dockerfiles
+      - name: View ID
+        run: echo ${{ matrix.value }}
 
-      - name: Build Dockerfiles
-        run: |
-          for DF in $(find dockerfiles -type f); do
-              TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
-              echo "Building: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"    
-              echo "From: ${DF}"    
+      - name: Kaniko build
+        uses: aevea/action-kaniko@master
+        with:
+          registry: ${{ env.REGISTRY }}
+          build_file: ${{ matrix.value }}
+          tag: $(echo ${{ matrix.value }} | sed -r 's/^(.+).php.(.*)$/\2/')
+          image: ${{ env.IMAGE_NAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          cache: true
+          cache_registry: aevea/cache
 
-              docker run \
-                -v "${{ github.workspace }}/dockerfiles:/dockerfiles:rw" -w "/dockerfiles" \
-                gcr.io/kaniko-project/executor \
-                  --cleanup \
-                  --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} \
-                  --dockerfile /${DF}
-          done
-          
+
+#      - name: Build Dockerfiles
+#        run: |
+#          for DF in $(find dockerfiles -type f); do
+#              TAG=$(echo ${DF} | sed -r 's/^(.+).php.(.*)$/\2/')
+#              echo "Building: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"
+#              echo "From: ${DF}"
+#
+#              docker run \
+#                -v "${{ github.workspace }}/dockerfiles:/dockerfiles:rw" -w "/dockerfiles" \
+#                gcr.io/kaniko-project/executor \
+#                  --cleanup \
+#                  --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} \
+#                  --dockerfile /${DF}
+#          done
+
 #
 #      - name: Build
 #        run: |
