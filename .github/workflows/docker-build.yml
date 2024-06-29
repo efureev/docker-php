@@ -47,6 +47,7 @@ jobs:
             done
             
             ARR=$(printf '%s\n' "${LIST[@]}" | jq -R . | jq -s .)
+            echo "$ARR"
             echo "value=$ARR" >> $GITHUB_OUTPUT
             echo "$GITHUB_OUTPUT"
 
